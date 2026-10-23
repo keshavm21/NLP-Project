@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vulntriage"
+version = "0.1.0"
+description = "Turning free-text security advisories into SBOM-aware patch priorities"
+readme = "README.md"
+requires-python = ">=3.11"
+# Core: light, installs everywhere (laptops, CI). Heavy ML libraries are in extras.
+dependencies = [
+    "pydantic>=2.5",
+    "pyyaml>=6.0",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "requests>=2.31",
+    "python-dotenv>=1.0",
+    "tqdm>=4.66",
+    "univers>=30.11",
+    "rapidfuzz>=3.5",
+]
+
+[project.optional-dependencies]
+# Model training / inference (P2, P3, P4; P5 for the LLM baseline)
+ml = [
+    "torch>=2.2",
+    "transformers>=4.44",
+    "datasets>=2.20",
+    "accelerate>=0.33",
+    "peft>=0.12",
+    "sentence-transformers>=3.0",
+    "faiss-cpu>=1.8",
+    "rank-bm25>=0.2.2",
+    "scikit-learn>=1.4",
+    "seqeval>=1.2",
+]
+# API + dashboard backend (P5)
+api = [
+    "fastapi>=0.111",
+    "uvicorn>=0.30",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+]
+all = ["vulntriage[ml,api,dev]"]
+
+[project.scripts]
+vulntriage = "vulntriage.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
