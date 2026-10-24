@@ -145,3 +145,38 @@ def test_unparseable_span_makes_item_range_none():
 def test_no_products_no_items():
     text = "Versions before 1.0 are affected."
     assert group_affected(text, spans(text, ("VERSION_EXPR", "before 1.0"))) == []
+
+
+def test_fixed_version_follows_matching_upper_bound():
+    # Nearest-left would pick WidgetServer; libfoo's "before 2.4.3" is the stronger evidence.
+    text = "libfoo before 2.4.3 and WidgetServer 1.x before 1.9 are affected; fixed in 2.4.3."
+    s = spans(
+        text,
+        ("PRODUCT", "libfoo"),
+        ("VERSION_EXPR", "before 2.4.3"),
+        ("PRODUCT", "WidgetServer"),
+        ("VERSION_EXPR", "1.x before 1.9"),
+        ("FIXED_VERSION", "2.4.3"),
+    )
+    assert [a.fixed_version for a in group_affected(text, s)] == ["2.4.3", None]
+
+
+def test_fixed_version_in_later_sentence_matched_by_bound():
+    text = (
+        "Foo Server before 7.4.1 allows XSS. Bar Client 2.x before 2.3.1 allows CSRF. "
+        "Fixed in 7.4.1."
+    )
+    assert [f for _, _, f in regex(text)] == ["7.4.1", None]
+
+
+def test_fixed_version_matching_two_products_falls_back():
+    text = "libfoo and libbar before 1.2.0 are affected. Fixed in 1.2.0."
+    s = spans(
+        text,
+        ("PRODUCT", "libfoo"),
+        ("PRODUCT", "libbar"),
+        ("VERSION_EXPR", "before 1.2.0"),
+        ("FIXED_VERSION", "1.2.0"),
+    )
+    # Both ranges end at 1.2.0 and the fix is in another sentence: not attributable.
+    assert [a.fixed_version for a in group_affected(text, s)] == [None, None]
