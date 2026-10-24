@@ -1,0 +1,106 @@
+{
+  "_comment": "Hand-written VERSION_EXPR phrasings in NVD/GHSA style, grouped by family. Each case: text, optional scheme (default generic), expected vers, versions inside and outside the range.",
+  "families": {
+    "before": [
+      {"text": "before 2.4.3", "vers": "vers:generic/<2.4.3", "in": ["2.4.2", "0.1"], "out": ["2.4.3", "3.0"]},
+      {"text": "versions before 1.10.0", "vers": "vers:generic/<1.10.0", "in": ["1.9.9"], "out": ["1.10.0"]},
+      {"text": "all versions before 0.9.5", "vers": "vers:generic/<0.9.5", "in": ["0.9.4"], "out": ["0.9.5"]},
+      {"text": "less than 4.17.21", "scheme": "npm", "vers": "vers:npm/<4.17.21", "in": ["4.17.20"], "out": ["4.17.21"]},
+      {"text": "versions below 2.0.0", "vers": "vers:generic/<2.0.0", "in": ["1.99.0"], "out": ["2.0.0"]}
+    ],
+    "prior_to": [
+      {"text": "prior to 3.1.1", "vers": "vers:generic/<3.1.1", "in": ["3.1.0"], "out": ["3.1.1"]},
+      {"text": "versions prior to 2.31.0", "scheme": "pypi", "vers": "vers:pypi/<2.31.0", "in": ["2.30.0"], "out": ["2.31.0"]},
+      {"text": "in versions prior to v5.2.1", "vers": "vers:generic/<5.2.1", "in": ["5.2.0"], "out": ["5.2.1"]}
+    ],
+    "through": [
+      {"text": "through 2.4.3", "vers": "vers:generic/<=2.4.3", "in": ["2.4.3", "2.4.2"], "out": ["2.4.4"]},
+      {"text": "versions through 9.0.0", "vers": "vers:generic/<=9.0.0", "in": ["9.0.0"], "out": ["9.0.1"]},
+      {"text": "thru 1.2.0", "vers": "vers:generic/<=1.2.0", "in": ["1.2.0"], "out": ["1.2.1"]}
+    ],
+    "up_to_including": [
+      {"text": "up to and including 1.5.2", "vers": "vers:generic/<=1.5.2", "in": ["1.5.2"], "out": ["1.5.3"]},
+      {"text": "versions up to (including) 7.4.0", "vers": "vers:generic/<=7.4.0", "in": ["7.4.0"], "out": ["7.4.1"]},
+      {"text": "up to and including version 2.17.0", "scheme": "maven", "vers": "vers:maven/<=2.17.0", "in": ["2.17.0"], "out": ["2.17.1"]}
+    ],
+    "up_to_excluding": [
+      {"text": "up to (excluding) 3.0.2", "vers": "vers:generic/<3.0.2", "in": ["3.0.1"], "out": ["3.0.2"]},
+      {"text": "versions up to (excluding) 1.1", "vers": "vers:generic/<1.1.0", "in": ["1.0.9"], "out": ["1.1.0"]}
+    ],
+    "and_earlier": [
+      {"text": "2.4.3 and earlier", "vers": "vers:generic/<=2.4.3", "in": ["2.4.3", "1.0"], "out": ["2.4.4"]},
+      {"text": "version 8.1.0 and prior", "vers": "vers:generic/<=8.1.0", "in": ["8.1.0"], "out": ["8.1.1"]},
+      {"text": "1.0.4 and below", "vers": "vers:generic/<=1.0.4", "in": ["1.0.4"], "out": ["1.0.5"]},
+      {"text": "3.2.1 and all earlier versions", "vers": "vers:generic/<=3.2.1", "in": ["3.2.1"], "out": ["3.2.2"]},
+      {"text": "versions 0.18.0 and earlier are affected", "vers": "vers:generic/<=0.18.0", "in": ["0.18.0"], "out": ["0.18.1"]}
+    ],
+    "and_later": [
+      {"text": "2.0.0 and later", "vers": "vers:generic/>=2.0.0", "in": ["2.0.0", "9.9.9"], "out": ["1.9.9"]},
+      {"text": "version 5.0 and above", "vers": "vers:generic/>=5.0.0", "in": ["5.0.0"], "out": ["4.9.9"]}
+    ],
+    "branch_before": [
+      {"text": "3.x before 3.1.1", "vers": "vers:generic/>=3.0.0|<3.1.1", "in": ["3.0.0", "3.1.0"], "out": ["2.9.9", "3.1.1"]},
+      {"text": "3.2 before 3.2.19", "vers": "vers:generic/>=3.2.0|<3.2.19", "in": ["3.2.18"], "out": ["3.1.0", "3.2.19"]},
+      {"text": "1.1.x before 1.1.9", "vers": "vers:generic/>=1.1.0|<1.1.9", "in": ["1.1.8"], "out": ["1.0.9", "1.1.9"]},
+      {"text": "2.x prior to 2.17.1", "scheme": "maven", "vers": "vers:maven/>=2|<2.17.1", "in": ["2.17.0"], "out": ["1.2.17", "2.17.1"]},
+      {"text": "versions 4.0 before 4.1.9", "scheme": "pypi", "vers": "vers:pypi/>=4.0|<4.1.9", "in": ["4.1.8"], "out": ["3.9", "4.1.9"]}
+    ],
+    "from_to": [
+      {"text": "from 1.0 to 1.5", "vers": "vers:generic/>=1.0.0|<=1.5.0", "in": ["1.0.0", "1.5.0"], "out": ["0.9.0", "1.5.1"]},
+      {"text": "versions 2.0.0 to 2.3.4", "vers": "vers:generic/>=2.0.0|<=2.3.4", "in": ["2.3.4"], "out": ["2.3.5"]},
+      {"text": "from 4.0.0 before 4.2.1", "vers": "vers:generic/>=4.0.0|<4.2.1", "in": ["4.2.0"], "out": ["3.9.9", "4.2.1"]},
+      {"text": "from (including) 1.2.0 up to (excluding) 1.2.5", "vers": "vers:generic/>=1.2.0|<1.2.5", "in": ["1.2.0"], "out": ["1.2.5"]},
+      {"text": "from (excluding) 1.0.0 up to (including) 1.4.0", "vers": "vers:generic/>1.0.0|<=1.4.0", "in": ["1.4.0"], "out": ["1.0.0", "1.4.1"]}
+    ],
+    "a_through_b": [
+      {"text": "1.0 through 1.5", "vers": "vers:generic/>=1.0.0|<=1.5.0", "in": ["1.5.0"], "out": ["1.5.1"]},
+      {"text": "versions 2.14.0 through 2.15.0", "scheme": "maven", "vers": "vers:maven/>=2.14.0|<=2.15.0", "in": ["2.14.1"], "out": ["2.13.9", "2.15.1"]},
+      {"text": "6.x through 6.2.3", "vers": "vers:generic/>=6.0.0|<=6.2.3", "in": ["6.2.3"], "out": ["5.9.9", "6.2.4"]}
+    ],
+    "operator": [
+      {"text": ">= 1.0.0, < 1.4.2", "vers": "vers:generic/>=1.0.0|<1.4.2", "in": ["1.4.1"], "out": ["0.9.9", "1.4.2"]},
+      {"text": "< 2.4.3", "vers": "vers:generic/<2.4.3", "in": ["2.4.2"], "out": ["2.4.3"]},
+      {"text": "<= 0.7.1", "scheme": "npm", "vers": "vers:npm/<=0.7.1", "in": ["0.7.1"], "out": ["0.7.2"]},
+      {"text": ">= 3.0.0a1, < 3.0.5", "scheme": "pypi", "vers": "vers:pypi/>=3.0.0a1|<3.0.5", "in": ["3.0.4"], "out": ["2.9", "3.0.5"]}
+    ],
+    "series": [
+      {"text": "2.x", "vers": "vers:generic/>=2.0.0|<3.0.0", "in": ["2.9.9"], "out": ["1.9.9", "3.0.0"]},
+      {"text": "all 1.2.x versions", "vers": "vers:generic/>=1.2.0|<1.3.0", "in": ["1.2.7"], "out": ["1.3.0"]}
+    ],
+    "single": [
+      {"text": "2.4.3", "vers": "vers:generic/2.4.3", "in": ["2.4.3"], "out": ["2.4.2", "2.4.4"]},
+      {"text": "version 1.0.0-beta.2", "scheme": "npm", "vers": "vers:npm/1.0.0-beta.2", "in": ["1.0.0-beta.2"], "out": ["1.0.0"]}
+    ],
+    "list": [
+      {"text": "2.4.3 and 3.1.1", "vers": "vers:generic/2.4.3|3.1.1", "in": ["2.4.3", "3.1.1"], "out": ["2.4.4", "3.0.0"]},
+      {"text": "1.0.1, 1.0.2 and 1.0.3", "vers": "vers:generic/1.0.1|1.0.2|1.0.3", "in": ["1.0.2"], "out": ["1.0.4"]},
+      {"text": "versions 0.9.0, 0.9.1, or 0.9.2", "vers": "vers:generic/0.9.0|0.9.1|0.9.2", "in": ["0.9.1"], "out": ["0.9.3"]}
+    ],
+    "multi_range": [
+      {"text": "before 1.2.3, 2.x before 2.4.5, and 3.x before 3.1.1", "vers": "vers:generic/<1.2.3|>=2.0.0|<2.4.5|>=3.0.0|<3.1.1", "in": ["1.2.2", "2.4.4", "3.1.0"], "out": ["1.2.3", "2.4.5", "3.1.1"]},
+      {"text": "3.2 before 3.2.19, 4.0 before 4.1.9, and 4.2 before 4.2.1", "scheme": "pypi", "vers": "vers:pypi/>=3.2|<3.2.19|>=4.0|<4.1.9|>=4.2|<4.2.1", "in": ["3.2.18", "4.1.8", "4.2"], "out": ["3.2.19", "4.1.9", "4.2.1"]},
+      {"text": ">= 1.0, < 1.5; >= 2.0, < 2.3", "vers": "vers:generic/>=1.0.0|<1.5.0|>=2.0.0|<2.3.0", "in": ["1.4.0", "2.2.0"], "out": ["1.5.0", "2.3.0"]}
+    ],
+    "fixed_in": [
+      {"text": "fixed in 2.4.3", "vers": "vers:generic/<2.4.3", "fixed": ["2.4.3"], "in": ["2.4.2"], "out": ["2.4.3"]},
+      {"text": "This issue has been patched in version 1.8.2.", "vers": "vers:generic/<1.8.2", "fixed": ["1.8.2"], "in": ["1.8.1"], "out": ["1.8.2"]},
+      {"text": "The vulnerability is fixed in v0.4.0", "vers": "vers:generic/<0.4.0", "fixed": ["0.4.0"], "in": ["0.3.9"], "out": ["0.4.0"]}
+    ],
+    "all_versions": [
+      {"text": "all versions", "vers": "vers:generic/*", "in": ["0.0.1", "99.0.0"], "out": []},
+      {"text": "All versions are affected", "scheme": "npm", "vers": "vers:npm/*", "in": ["1.0.0"], "out": []}
+    ]
+  },
+  "unparseable": [
+    {"text": "up to 2.0", "why": "inclusive or exclusive is not stated"},
+    {"text": "until 3.1.4", "why": "inclusive or exclusive is not stated"},
+    {"text": "fixed in 1.2.9 and 2.0.3", "why": "branch starts are not stated"},
+    {"text": "4.x before 3.1", "why": "empty interval"},
+    {"text": "to 2.0", "why": "no lower bound for 'to'"},
+    {"text": "1.2.3.4", "why": "not representable in a semver scheme"},
+    {"text": "before 1.1.1t", "why": "letter suffix would be coerced to a prerelease"},
+    {"text": "multiple versions", "why": "no version"},
+    {"text": "the latest release", "why": "no version"},
+    {"text": "", "why": "empty"}
+  ]
+}
