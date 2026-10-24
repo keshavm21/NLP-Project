@@ -10,7 +10,9 @@ Rules, applied per version span (all within one sentence):
   3. No product on the left: attach to a product right after "of/in/for"
      ("versions before 2.4.3 of libfoo").
   4. Still nothing: if the advisory names exactly one product, attach to it.
-FIXED_VERSION spans use rules 1 and 4 only. A VENDOR directly before a product attaches to it.
+FIXED_VERSION spans: first, if exactly one product has a range ending just below the fixed
+version ("before 2.4.3" ... "fixed in 2.4.3"), attach there; otherwise rules 1 and 4.
+A VENDOR directly before a product attaches to it.
 Mentions of the same product (case-insensitive) become one AffectedItem with the ranges unioned;
 if any of its version spans can't be parsed, vers_range is None.
 """
@@ -19,7 +21,7 @@ from __future__ import annotations
 
 import re
 
-from vulntriage.extract.version_grammar import combine, parse_version_expr
+from vulntriage.extract.version_grammar import combine, parse_version, parse_version_expr
 from vulntriage.schemas import AffectedItem, Span
 
 _SENTENCE_END = re.compile(r"[.!?](?=\s+[A-Z(])|\n\s*\n")
@@ -57,17 +59,28 @@ def group_affected(
         by_key.setdefault(_key(p), []).append(p)
     single = by_key[_key(products[0])] if len(by_key) == 1 else None
 
+    ordered = sorted(spans, key=lambda s: s.start)
     versions: dict[str, list[Span]] = {k: [] for k in by_key}
-    fixed: dict[str, list[Span]] = {k: [] for k in by_key}
-    for s in sorted(spans, key=lambda s: s.start):
-        if s.label not in ("VERSION_EXPR", "FIXED_VERSION"):
-            continue
-        targets = _targets(text, s, products, sent, allow_right=s.label == "VERSION_EXPR")
+    for s in (s for s in ordered if s.label == "VERSION_EXPR"):
+        targets = _targets(text, s, products, sent, allow_right=True)
         if not targets and single is not None:
             targets = [single[0]]
-        out = versions if s.label == "VERSION_EXPR" else fixed
         for key in dict.fromkeys(_key(t) for t in targets):
-            out[key].append(s)
+            versions[key].append(s)
+
+    bounds = {k: _exclusive_upper_bounds(v, scheme) for k, v in versions.items()}
+    fixed: dict[str, list[Span]] = {k: [] for k in by_key}
+    for s in (s for s in ordered if s.label == "FIXED_VERSION"):
+        fv = parse_version(s.text, scheme)
+        consistent = [k for k, b in bounds.items() if fv is not None and fv in b]
+        if len(consistent) == 1:
+            fixed[consistent[0]].append(s)
+            continue
+        targets = _targets(text, s, products, sent, allow_right=False)
+        if not targets and single is not None:
+            targets = [single[0]]
+        for key in dict.fromkeys(_key(t) for t in targets):
+            fixed[key].append(s)
 
     vendors = [s for s in spans if s.label == "VENDOR"]
     items = []
@@ -112,6 +125,19 @@ def _targets(
             if p.start >= span.end and _RIGHT_GAP.match(text[span.end : p.start]):
                 return [p]
     return []
+
+
+def _exclusive_upper_bounds(vspans: list[Span], scheme: str) -> list:
+    """Versions V where a product's range says "< V" (V is then a plausible fix)."""
+    out = []
+    for v in vspans:
+        parse = parse_version_expr(v.text, scheme)
+        if parse is None:
+            continue
+        for iv in parse.intervals:
+            if iv.hi is not None and not iv.hi_inclusive:
+                out.append(parse_version(iv.hi, scheme))
+    return out
 
 
 def _vendor_for(text: str, mentions: list[Span], vendors: list[Span]) -> Span | None:

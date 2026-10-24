@@ -14,8 +14,10 @@ from vulntriage.extract.tagger import (
     IGNORE_INDEX,
     LABEL2ID,
     DebertaTagger,
+    merge_window_predictions,
     spans_to_token_labels,
     token_labels_to_spans,
+    token_windows,
 )
 from vulntriage.schemas import Advisory, Span
 
@@ -24,13 +26,23 @@ class StubTokenizer:
     """Fast-tokenizer stand-in: words and punctuation, split into 3-char "subwords".
 
     With leading_space=True the first subword of a word starts at the preceding space, like
-    SentencePiece's "▁word" pieces. Adds (0, 0) special tokens at both ends.
+    SentencePiece's "▁word" pieces. Adds (0, 0) special tokens at both ends unless
+    add_special_tokens=False.
     """
+
+    cls_token_id, sep_token_id = 1, 2
 
     def __init__(self, leading_space: bool = False) -> None:
         self.leading_space = leading_space
 
-    def __call__(self, text, return_offsets_mapping=True, truncation=True, max_length=512):
+    def __call__(
+        self,
+        text,
+        return_offsets_mapping=True,
+        truncation=True,
+        max_length=512,
+        add_special_tokens=True,
+    ):
         offsets = [(0, 0)]
         for m in re.finditer(r"\w+|[^\w\s]", text):
             for i in range(m.start(), m.end(), 3):
@@ -38,8 +50,12 @@ class StubTokenizer:
                 if i == m.start() and self.leading_space and i > 0 and text[i - 1] == " ":
                     start = i - 1
                 offsets.append((start, min(i + 3, m.end())))
-        offsets = offsets[: max_length - 1] + [(0, 0)]
-        return {"input_ids": list(range(len(offsets))), "offset_mapping": offsets}
+        offsets = offsets + [(0, 0)]
+        if truncation and len(offsets) > max_length:
+            offsets = offsets[: max_length - 1] + [(0, 0)]
+        if not add_special_tokens:
+            offsets = offsets[1:-1]
+        return {"input_ids": list(range(10, 10 + len(offsets))), "offset_mapping": offsets}
 
 
 TEXT = "libfoo before 2.4.3 (fixed in 2.4.3) and Acme WidgetServer 1.x before 1.9 are affected."
@@ -185,3 +201,52 @@ def test_import_does_not_pull_in_ml_libraries():
         "assert not {'torch', 'transformers'} & set(sys.modules), 'heavy import'"
     )
     subprocess.run([sys.executable, "-c", code], check=True)
+
+
+# --- windowing --------------------------------------------------------------------------------
+
+
+def test_token_windows():
+    assert token_windows(5, 8, 2) == [(0, 5)]
+    assert token_windows(10, 4, 1) == [(0, 4), (3, 7), (6, 10)]
+    with pytest.raises(ValueError):
+        token_windows(10, 4, 4)
+
+
+def test_merge_prefers_window_with_more_context():
+    windows = [(0, 4), (2, 6)]
+    preds = [[0, 0, 1, 1], [2, 2, 3, 3]]
+    # token 2: context 1 in window 0, 0 in window 1 -> 1; token 3: 0 vs 1 -> 2
+    assert merge_window_predictions(6, windows, preds) == [0, 0, 1, 2, 3, 3]
+
+
+def test_long_advisory_is_tagged_across_windows():
+    filler = " ".join(["The service mishandles input."] * 40)
+    text = (
+        f"{filler} Upgrade libzap before 9.1.2 now. {filler} Also megalib 3.x before 3.4.1 is hit."
+    )
+    gold = []
+    for label, surface in [
+        ("PRODUCT", "libzap"),
+        ("VERSION_EXPR", "before 9.1.2"),
+        ("PRODUCT", "megalib"),
+        ("VERSION_EXPR", "3.x before 3.4.1"),
+    ]:
+        start = text.index(surface)
+        gold.append(Span.from_text(text, start, start + len(surface), label))
+    calls = []
+
+    def oracle(window):
+        calls.append(len(window["input_ids"]))
+        assert window["input_ids"][0] == 1 and window["input_ids"][-1] == 2
+        return spans_to_token_labels(text, window["offset_mapping"], gold)
+
+    tagger = DebertaTagger(max_length=64, stride=16, tokenizer=StubTokenizer(True), predict=oracle)
+    adv = Advisory(id="CVE-2025-0003", source="nvd", published=datetime(2025, 8, 1), text=text)
+    result = tagger.extract(adv)
+    assert len(calls) > 2 and max(calls) <= 64
+    assert result.spans == gold
+    assert [(a.product.text, a.vers_range) for a in result.affected] == [
+        ("libzap", "vers:generic/<9.1.2"),
+        ("megalib", "vers:generic/>=3.0.0|<3.4.1"),
+    ]
