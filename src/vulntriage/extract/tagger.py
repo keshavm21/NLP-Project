@@ -4,6 +4,9 @@ Training is not written yet (needs P1's silver spans). What is here:
   - BIO label <-> id maps over SPAN_LABELS.
   - spans_to_token_labels: character spans -> one label id per subword token (for training).
   - token_labels_to_spans: per-token label ids -> character spans (for inference).
+  - token_windows / merge_window_predictions: advisories longer than max_length are tagged in
+    overlapping windows; each token keeps the prediction from the window where it has the most
+    context.
   - DebertaTagger(Extractor): tokenizer + predict function -> spans -> grouping. Both can be
     injected (tests use a stub); otherwise they are loaded lazily from a model directory.
 
@@ -128,6 +131,35 @@ def token_labels_to_spans(text: str, offsets: Offsets, label_ids: Sequence[int])
     return spans
 
 
+def token_windows(n_tokens: int, size: int, stride: int) -> list[tuple[int, int]]:
+    """[start, end) windows of at most `size` tokens; consecutive windows overlap by `stride`."""
+    if size <= 0 or not 0 <= stride < size:
+        raise ValueError(f"need 0 <= stride < size, got size={size}, stride={stride}")
+    if n_tokens <= size:
+        return [(0, n_tokens)]
+    out, start = [], 0
+    while True:
+        end = min(start + size, n_tokens)
+        out.append((start, end))
+        if end == n_tokens:
+            return out
+        start += size - stride
+
+
+def merge_window_predictions(
+    n_tokens: int, windows: list[tuple[int, int]], preds: list[list[int]]
+) -> list[int]:
+    """One label per token: from the window where the token has the most context on both sides."""
+    merged = [IGNORE_INDEX] * n_tokens
+    best = [-1] * n_tokens
+    for (start, end), labels in zip(windows, preds, strict=True):
+        for i in range(start, end):
+            context = min(i - start, end - 1 - i)
+            if context > best[i]:
+                best[i], merged[i] = context, labels[i - start]
+    return merged
+
+
 Predict = Callable[[dict], list[int]]
 
 
@@ -141,12 +173,14 @@ class DebertaTagger(Extractor):
         model_dir: str | Path | None = None,
         scheme: str = "generic",
         max_length: int = 512,
+        stride: int = 128,
         tokenizer=None,
         predict: Predict | None = None,
     ) -> None:
         self.model_dir = model_dir
         self.scheme = scheme
         self.max_length = max_length
+        self.stride = stride
         self.tokenizer = tokenizer
         self.predict = predict
 
@@ -154,17 +188,33 @@ class DebertaTagger(Extractor):
         if self.tokenizer is None or self.predict is None:
             self._load()
         text = advisory.text
-        enc = self.tokenizer(
-            text, return_offsets_mapping=True, truncation=True, max_length=self.max_length
-        )
-        offsets = [tuple(o) for o in enc["offset_mapping"]]
-        spans = token_labels_to_spans(text, offsets, self.predict(enc))
+        offsets, labels = self._tag(text)
+        spans = token_labels_to_spans(text, offsets, labels)
         return ExtractionResult(
             advisory_id=advisory.id,
             spans=spans,
             affected=group_affected(text, spans, self.scheme),
             model=self.name,
         )
+
+    def _tag(self, text: str) -> tuple[list[tuple[int, int]], list[int]]:
+        """Tokenize the whole text, predict over overlapping windows, merge per token."""
+        enc = self.tokenizer(
+            text, return_offsets_mapping=True, add_special_tokens=False, truncation=False
+        )
+        ids = list(enc["input_ids"])
+        offsets = [tuple(o) for o in enc["offset_mapping"]]
+        cls, sep = self.tokenizer.cls_token_id, self.tokenizer.sep_token_id
+        windows = token_windows(len(ids), self.max_length - 2, self.stride)
+        preds = []
+        for start, end in windows:
+            window = {
+                "input_ids": [cls, *ids[start:end], sep],
+                "attention_mask": [1] * (end - start + 2),
+                "offset_mapping": [(0, 0), *offsets[start:end], (0, 0)],
+            }
+            preds.append(self.predict(window)[1:-1])  # drop [CLS]/[SEP] predictions
+        return offsets, merge_window_predictions(len(ids), windows, preds)
 
     def _load(self) -> None:
         """Load a fine-tuned model from `model_dir` (needs the `ml` extra)."""
@@ -177,9 +227,7 @@ class DebertaTagger(Extractor):
         model = AutoModelForTokenClassification.from_pretrained(self.model_dir).eval()
 
         def predict(enc: dict) -> list[int]:
-            inputs = {
-                k: torch.tensor([v]) for k, v in enc.items() if k in ("input_ids", "attention_mask")
-            }
+            inputs = {k: torch.tensor([enc[k]]) for k in ("input_ids", "attention_mask")}
             with torch.no_grad():
                 logits = model(**inputs).logits[0]
             return logits.argmax(-1).tolist()
