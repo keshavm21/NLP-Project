@@ -1,0 +1,33 @@
+# DeBERTa-v3 BIO span tagger (P2 main system). Used by extract/train.py once P1's silver spans exist.
+component: extract
+system: deberta-tagger
+
+model:
+  name: microsoft/deberta-v3-base
+  max_length: 512
+  stride: 128                 # overlap between windows for advisories longer than max_length
+  label_all_subtokens: true   # false = only the first subword of a word gets a label (rest -100)
+
+labels: [O, B-VENDOR, I-VENDOR, B-PRODUCT, I-PRODUCT, B-VERSION_EXPR, I-VERSION_EXPR,
+         B-FIXED_VERSION, I-FIXED_VERSION]   # must equal tagger.BIO_LABELS
+
+data:
+  train: silver/extract_train.jsonl   # relative to data/processed; train window only
+  dev: silver/extract_dev.jsonl
+  drop_fuzzy_alignments: true         # ablation: set false ("no silver-label filtering")
+
+training:
+  learning_rate: 3.0e-5
+  batch_size: 16
+  gradient_accumulation_steps: 1
+  epochs: 5
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  fp16: true
+  early_stopping_metric: span_f1_micro   # on dev
+  early_stopping_patience: 2
+  seeds: [13, 42, 2026]                  # main system runs with 3 seeds
+
+inference:
+  scheme: generic   # univers scheme for the version grammar when the ecosystem is unknown
