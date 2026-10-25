@@ -12,8 +12,8 @@ labels: [O, B-VENDOR, I-VENDOR, B-PRODUCT, I-PRODUCT, B-VERSION_EXPR, I-VERSION_
          B-FIXED_VERSION, I-FIXED_VERSION]   # must equal tagger.BIO_LABELS
 
 data:
-  train: silver/extract_train.jsonl   # relative to data/processed; train window only
-  dev: silver/extract_dev.jsonl
+  silver: silver/spans.jsonl          # relative to data/processed (P1); split via load_splits()
+                                      # train on the train window only; dev for model selection
   drop_fuzzy_alignments: true         # ablation: set false ("no silver-label filtering")
 
 training:
