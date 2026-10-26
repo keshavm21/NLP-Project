@@ -1,0 +1,17 @@
+# Local LLM extractor (P2 "LoRA small LLM -> JSON" system). Used with extract/hf_backend.py.
+component: extract
+system: lora-small-llm
+
+model:
+  base: Qwen/Qwen2.5-1.5B-Instruct   # placeholder within the ~1.5-8B range; pick before training
+  adapter_dir: null                  # models/extract/<run_id> once the LoRA adapter is trained
+  dtype: auto
+
+generation:
+  max_new_tokens: 512
+  do_sample: false                   # greedy: reproducible outputs
+
+prompt:
+  path: configs/extract/prompts/few_shot.yaml
+  n_examples: 0                      # the fine-tuned model is prompted zero-shot
+  use_llm_vers: false                # true = "no grammar" ablation
