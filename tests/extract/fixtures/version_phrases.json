@@ -36,7 +36,8 @@
     ],
     "and_later": [
       {"text": "2.0.0 and later", "vers": "vers:generic/>=2.0.0", "in": ["2.0.0", "9.9.9"], "out": ["1.9.9"]},
-      {"text": "version 5.0 and above", "vers": "vers:generic/>=5.0.0", "in": ["5.0.0"], "out": ["4.9.9"]}
+      {"text": "version 5.0 and above", "vers": "vers:generic/>=5.0.0", "in": ["5.0.0"], "out": ["4.9.9"]},
+      {"text": "6.2+", "vers": "vers:generic/>=6.2.0", "in": ["6.2.0", "7.0.0"], "out": ["6.1.9"]}
     ],
     "branch_before": [
       {"text": "3.x before 3.1.1", "vers": "vers:generic/>=3.0.0|<3.1.1", "in": ["3.0.0", "3.1.0"], "out": ["2.9.9", "3.1.1"]},
@@ -50,7 +51,9 @@
       {"text": "versions 2.0.0 to 2.3.4", "vers": "vers:generic/>=2.0.0|<=2.3.4", "in": ["2.3.4"], "out": ["2.3.5"]},
       {"text": "from 4.0.0 before 4.2.1", "vers": "vers:generic/>=4.0.0|<4.2.1", "in": ["4.2.0"], "out": ["3.9.9", "4.2.1"]},
       {"text": "from (including) 1.2.0 up to (excluding) 1.2.5", "vers": "vers:generic/>=1.2.0|<1.2.5", "in": ["1.2.0"], "out": ["1.2.5"]},
-      {"text": "from (excluding) 1.0.0 up to (including) 1.4.0", "vers": "vers:generic/>1.0.0|<=1.4.0", "in": ["1.4.0"], "out": ["1.0.0", "1.4.1"]}
+      {"text": "from (excluding) 1.0.0 up to (including) 1.4.0", "vers": "vers:generic/>1.0.0|<=1.4.0", "in": ["1.4.0"], "out": ["1.0.0", "1.4.1"]},
+      {"text": "from 2.0 and before 2.5", "vers": "vers:generic/>=2.0.0|<2.5.0", "in": ["2.4.9"], "out": ["1.9.9", "2.5.0"]},
+      {"text": "starting with 3.1.0, before 3.1.4", "vers": "vers:generic/>=3.1.0|<3.1.4", "in": ["3.1.3"], "out": ["3.0.9", "3.1.4"]}
     ],
     "a_through_b": [
       {"text": "1.0 through 1.5", "vers": "vers:generic/>=1.0.0|<=1.5.0", "in": ["1.5.0"], "out": ["1.5.1"]},
@@ -89,6 +92,18 @@
     "all_versions": [
       {"text": "all versions", "vers": "vers:generic/*", "in": ["0.0.1", "99.0.0"], "out": []},
       {"text": "All versions are affected", "scheme": "npm", "vers": "vers:npm/*", "in": ["1.0.0"], "out": []}
+    ],
+    "hyphen_range": [
+      {"text": "versions 1.0-1.5", "vers": "vers:generic/>=1.0.0|<=1.5.0", "in": ["1.0.0", "1.5.0"], "out": ["0.9.9", "1.5.1"]},
+      {"text": "2.3.0 - 2.3.7", "scheme": "pypi", "vers": "vers:pypi/>=2.3.0|<=2.3.7", "in": ["2.3.7"], "out": ["2.3.8"]},
+      {"text": "4.0.1–4.0.9", "vers": "vers:generic/>=4.0.1|<=4.0.9", "in": ["4.0.5"], "out": ["4.0.0", "4.0.10"]}
+    ],
+    "maven_interval": [
+      {"text": "[2.0.0,2.12.2)", "scheme": "maven", "vers": "vers:maven/>=2.0.0|<2.12.2", "in": ["2.0.0", "2.12.1"], "out": ["1.9", "2.12.2"]},
+      {"text": "(,1.7.3]", "scheme": "maven", "vers": "vers:maven/<=1.7.3", "in": ["1.7.3"], "out": ["1.7.4"]},
+      {"text": "[3.0,)", "scheme": "maven", "vers": "vers:maven/>=3.0", "in": ["3.0", "9.0"], "out": ["2.9"]},
+      {"text": "(,1.2.17], [2.0, 2.15.0)", "scheme": "maven", "vers": "vers:maven/<=1.2.17|>=2.0|<2.15.0", "in": ["1.2.17", "2.14.1"], "out": ["1.3", "2.15.0"]},
+      {"text": "[5.3.18]", "scheme": "maven", "vers": "vers:maven/5.3.18", "in": ["5.3.18"], "out": ["5.3.19"]}
     ]
   },
   "unparseable": [
@@ -101,6 +116,9 @@
     {"text": "before 1.1.1t", "why": "letter suffix would be coerced to a prerelease"},
     {"text": "multiple versions", "why": "no version"},
     {"text": "the latest release", "why": "no version"},
-    {"text": "", "why": "empty"}
+    {"text": "", "why": "empty"},
+    {"text": "starting with 2.0 up to 2.5", "why": "'up to' is ambiguous even with a lower bound"},
+    {"text": "(1.2)", "why": "exact version needs square brackets"},
+    {"text": "[,1.0]", "why": "an unbounded side can't be inclusive"}
   ]
 }
