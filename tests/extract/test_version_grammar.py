@@ -198,3 +198,17 @@ def test_output_round_trips_through_univers():
     for _, case in (p.values for p in CASES):
         vers = to_vers(case["text"], case.get("scheme", "generic"))
         assert str(VersionRange.from_string(vers)) == vers
+
+
+def test_hyphen_range():
+    check("1.0-1.5", "hyphen_range", "vers:generic/>=1.0.0|<=1.5.0", ["1.5.0"], ["1.5.1"])
+
+
+def test_dash_suffix_is_not_a_range():
+    # "1.0.0-1" is a prerelease/revision, "2.4.3-beta1" a prerelease: single versions.
+    assert parse_version_expr("1.0.0-1").family == "single"
+    assert parse_version_expr("2.4.3-beta1").family == "single"
+
+
+def test_maven_interval():
+    check("[1.0,2.0)", "maven_interval", "vers:maven/>=1.0|<2.0", ["1.0"], ["2.0"], "maven")

@@ -37,6 +37,8 @@ FAMILIES: tuple[str, ...] = (
     "multi_range",  # before 1.2.3, 2.x before 2.4.5, and 3.x before 3.1.1
     "fixed_in",  # fixed in 2.4.3
     "all_versions",  # all versions
+    "hyphen_range",  # 1.0-1.5, 1.0 - 1.5 (inclusive)
+    "maven_interval",  # [1.0,2.0), (,1.0], [1.2], (,1.0],[1.2,)
 )
 
 # Schemes whose univers version class is semver: they coerce non-semver strings lossily
@@ -76,7 +78,8 @@ _UPPER_ALT = "|".join(re.escape(k) for k in sorted(_UPPER_KW, key=len, reverse=T
 
 _BOUNDS_RE = re.compile(
     rf"^(?:(?P<from>from(?: \((?P<lo_kind>including|excluding)\))?|starting (?:with|from|at|in)"
-    rf"|since)\s+)?(?:(?:versions?\s+)?(?P<lo>{_TOK})\s+)?(?P<kw>{_UPPER_ALT})\s+"
+    rf"|since)\s+)?(?:(?:versions?\s+)?(?P<lo>{_TOK}),?\s+(?:(?:and|but)\s+)?)?"
+    rf"(?P<kw>{_UPPER_ALT})\s+"
     rf"(?:versions?\s+)?(?P<hi>{_VER})$",
     re.I,
 )
@@ -98,12 +101,25 @@ _EARLIER_RE = re.compile(
     re.I,
 )
 _LATER_RE = re.compile(
-    rf"^(?P<v>{_VER}),? (?:and|or) (?:all )?(?:later|above|newer|higher|greater|subsequent)"
-    r"(?: versions?| releases?)?$",
+    rf"^(?P<v>{_VER})(?:,? (?:and|or) (?:all )?(?:later|above|newer|higher|greater|subsequent)"
+    r"(?: versions?| releases?)?|\+)$",
     re.I,
 )
 _SERIES_RE = re.compile(rf"^(?P<s>{_SERIES})$", re.I)
 _SINGLE_RE = re.compile(rf"^(?P<v>{_VER})$", re.I)
+# A dash between two versions is a range only when it can't be a prerelease/revision suffix:
+# spaced or en dash, or both sides dotted ("1.0-1.5", but not "1.0.0-1").
+_HYPHEN_RE = re.compile(
+    rf"^(?P<lo>{_VER})\s+[-–]\s+(?P<hi>{_VER})$|^(?P<lo2>{_VER})\s*–\s*(?P<hi2>{_VER})$"
+    rf"|^(?P<lo3>v?\d+(?:\.\d+)+)-(?P<hi3>\d+(?:\.\d+)+)$",
+    re.I,
+)
+_INTERVAL = rf"[\[(]\s*(?:{_VER})?\s*(?:,\s*(?:{_VER})?\s*)?[\])]"
+_MAVEN_RE = re.compile(rf"^{_INTERVAL}(?:\s*,\s*{_INTERVAL})*$", re.I)
+_MAVEN_PART_RE = re.compile(
+    rf"(?P<open>[\[(])\s*(?P<lo>{_VER})?\s*(?P<comma>,)?\s*(?P<hi>{_VER})?\s*(?P<close>[\])])",
+    re.I,
+)
 
 # Clause separators: ",", ";", " and ", " or ", ", and" -- but only when the next clause starts
 # like a clause ("2.4.3 and earlier" must not split; ">= 1.0, < 2.0" stays one clause).
@@ -297,12 +313,36 @@ def _parse_clause(expr: str, scheme: str) -> _Clause | None:
     if m := _SERIES_RE.match(expr):
         lo, hi = _series_bounds(m["s"])
         return ("series", [Interval(lo=lo, hi=hi)], ())
+    if _MAVEN_RE.match(expr):
+        return _maven_clause(expr)
+    if m := _HYPHEN_RE.match(expr):
+        lo = _clean(m["lo"] or m["lo2"] or m["lo3"])
+        hi = _clean(m["hi"] or m["hi2"] or m["hi3"])
+        return ("hyphen_range", [Interval(lo, True, hi, True)], ())
     if m := _SINGLE_RE.match(expr):
         v = _clean(m["v"])
         return ("single", [Interval(lo=v, hi=v, hi_inclusive=True)], ())
     if m := _BOUNDS_RE.match(expr):
         return _bounds_clause(m)
     return None
+
+
+def _maven_clause(expr: str) -> _Clause | None:
+    """Interval notation: "[" / "]" inclusive, "(" / ")" exclusive, empty side = unbounded."""
+    intervals = []
+    for m in _MAVEN_PART_RE.finditer(expr):
+        lo, hi = m["lo"] and _clean(m["lo"]), m["hi"] and _clean(m["hi"])
+        if m["comma"] is None:  # "[1.2]" is an exact version; "(1.2)" is meaningless
+            if lo is None or m["open"] != "[" or m["close"] != "]":
+                return None
+            intervals.append(Interval(lo, True, lo, True))
+            continue
+        if lo is None and hi is None:
+            return None
+        if (lo is None and m["open"] == "[") or (hi is None and m["close"] == "]"):
+            return None  # an unbounded side can't be inclusive
+        intervals.append(Interval(lo, m["open"] == "[", hi, m["close"] == "]"))
+    return ("maven_interval", intervals, ())
 
 
 def _operator_clause(m: re.Match[str]) -> _Clause | None:
