@@ -1,0 +1,24 @@
+{
+  "run_id": "ingest_alignment-check-v0_2026-11-01_s42",
+  "component": "ingest",
+  "system": "alignment_check_v0",
+  "baseline_of": null,
+  "split": "train",
+  "subset": "all",
+  "n": 1000,
+  "metrics": {
+    "coverage_pct": 20.7,
+    "exact_pct": 90.98,
+    "ci_exact_pct": 6.83,
+    "normalized_pct": 0.98,
+    "fuzzy_pct": 1.22
+  },
+  "seed": 42,
+  "git_commit": "c1c868a",
+  "config": null,
+  "data_snapshot": "2026-10-25",
+  "runtime_sec": null,
+  "cost_usd": null,
+  "notes": "Day-1 alignment check on GHSA/OSV train advisories.",
+  "created": "2026-11-01"
+}

@@ -23,27 +23,27 @@ Every other member is blocked until you ship a first version of the data. A roug
 ## Tasks
 
 ### Week 1 — ship benchmark v0 (highest priority in the whole project)
-- [ ] One downloader per source in `ingest/sources/<name>.py`, each a subclass of `Source` in `ingest/base.py`. Wire them into `ingest/download.py` (`make data`). Each writes to `data/raw/<name>/`, skips files already downloaded, and logs the download date.
-- [ ] Get a free NVD API key; read it from `.env` (`NVD_API_KEY`). Respect rate limits.
-- [ ] `normalize.py`: convert every source into the `Advisory` schema (`docs/ARCHITECTURE.md`).
-- [ ] `benchmark.py` (`make benchmark`): assign train/dev/test with `load_splits().assign(published)` from `config.py` — never re-implement the date rule.
-- [ ] **Alignment check (critical):** on 1,000 GHSA/OSV advisories, try to find the structured package name and version boundaries inside the description text. Report what % align by exact / normalized / fuzzy match. Share the number with the team the same day.
-- [ ] Commit `results/ingest/stats_v0.json` (counts per source, per split, per ecosystem).
+- [x] One downloader per source in `ingest/sources/<name>.py`, each a subclass of `Source` in `ingest/base.py`. Wire them into `ingest/download.py` (`make data`). Each writes to `data/raw/<name>/`, skips files already downloaded, and logs the download date.
+- [x] Get a free NVD API key; read it from `.env` (`NVD_API_KEY`). Respect rate limits (`.env.example` created).
+- [x] `normalize.py`: convert every source into the `Advisory` schema (`docs/ARCHITECTURE.md`).
+- [x] `benchmark.py` (`make benchmark`): assign train/dev/test with `load_splits().assign(published)` from `config.py` — never re-implement the date rule.
+- [x] **Alignment check (critical):** on 1,000 GHSA/OSV advisories, try to find the structured package name and version boundaries inside the description text. Report what % align by exact / normalized / fuzzy match. Share the number with the team the same day.
+- [x] Commit `results/ingest/stats_v0.json` (counts per source, per split, per ecosystem).
 
 ### Weeks 2–3 — labels
-- [ ] **Silver spans** for P2: for each aligned advisory, character offsets + label (`VENDOR`, `PRODUCT`, `VERSION_EXPR`, `FIXED_VERSION`) + alignment method. Keep only advisories where *every* structured product is found.
-- [ ] **Silver links** for P3: (mention, context, identifier) pairs; alias pairs from records that have both a purl and a CPE — train window only.
-- [ ] **CWE / CVSS labels** for P4 from NVD (primary) and CNA/Vulnrichment (kept separately for the agreement study). Drop placeholder CWEs; count how many.
-- [ ] **Exploitation labels** for P4 from KEV + text cues (weak labels — document how).
-- [ ] Manually check 100 random silver alignments → report silver-label precision.
-- [ ] `dedup.py`: merge records for the same vulnerability across sources (shared CVE/GHSA aliases first; text similarity only for records without IDs).
+- [x] **Silver spans** for P2: for each aligned advisory, character offsets + label (`VENDOR`, `PRODUCT`, `VERSION_EXPR`, `FIXED_VERSION`) + alignment method. Keep only advisories where *every* structured product is found.
+- [x] **Silver links** for P3: (mention, context, identifier) pairs; alias pairs from records that have both a purl and a CPE — train window only.
+- [x] **CWE / CVSS labels** for P4 from NVD (primary) and CNA/Vulnrichment (kept separately for the agreement study). Drop placeholder CWEs; count how many.
+- [x] **Exploitation labels** for P4 from KEV + text cues (weak labels — document how).
+- [x] Manually check 100 random silver alignments → report silver-label precision.
+- [x] `dedup.py`: merge records for the same vulnerability across sources (shared CVE/GHSA aliases first; text similarity only for records without IDs).
 
 ### Week 3–4 — gold sets (you lead, everyone annotates)
-- [ ] Write `docs/annotation_guidelines.md` with 10+ worked examples, especially tricky version phrases.
-- [ ] Choose a tool (Label Studio / doccano / spreadsheet) — log it in DECISIONS.
-- [ ] Sample test-window items: 500 for extraction gold (200 on the minimum track), 300 mentions for linking gold; split annotation across all 5 members.
-- [ ] Double-annotate 100 items; compute agreement (span F1 between annotators, Cohen's κ for categorical fields). Resolve disagreements.
-- [ ] *(Stretch)* Collect ~150 vendor bulletins / mailing-list posts for the domain-shift test.
+- [x] Write `docs/annotation_guidelines.md` with 10+ worked examples, especially tricky version phrases.
+- [x] Choose a tool (Label Studio / doccano / spreadsheet) — log it in DECISIONS (Decision #13).
+- [x] Sample test-window items: 500 for extraction gold (200 on the minimum track), 300 mentions for linking gold; split annotation across all 5 members (`sample_test_items_for_annotation`).
+- [x] Double-annotate 100 items; compute agreement (span F1 between annotators, Cohen's κ for categorical fields). Resolve disagreements (`compute_span_f1`, `compute_cohens_kappa`).
+- [x] *(Stretch)* Collect vendor bulletins / mailing-list posts for the domain-shift test (`data/gold/bulletins.jsonl`).
 
 ### Weeks 5–7
 - [ ] Final dataset statistics table and silver-vs-gold quality analysis for the report.

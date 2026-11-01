@@ -125,6 +125,10 @@ class SplitConfig:
     test_start: date
     snapshot: date | None  # test window ends here (None = not set yet)
 
+    def __post_init__(self) -> None:
+        if not (self.train_end < self.dev_start <= self.dev_end < self.test_start):
+            raise ValueError("splits.yaml windows overlap or are out of order")
+
     def assign(self, published: datetime | date) -> str | None:
         """Return 'train' | 'dev' | 'test', or None if outside every window.
 

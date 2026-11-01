@@ -18,12 +18,16 @@ Status: **proposed** = default chosen when the docs were written; the team shoul
 | 10 | 2026-10-23 | Gold sets are test-window only and never used for training or prompts | Clean evaluation | proposed | |
 | 11 | 2026-10-23 | Shared starter code: schemas, module interfaces (`base.py`), pipeline glue, config/split helper, JSONL I/O, eval writer + metrics, CLI, CI | Lets all 5 work in parallel from day 1 | proposed | |
 | 12 | 2026-10-23 | Core install excludes torch; ML libraries in the `ml` extra | CI and laptops stay light; only model owners install heavy deps | proposed | |
+| 13 | 2026-10-25 | Annotation tool: doccano / Label Studio compatible JSONL export with local spreadsheet review | Zero cloud lock-in, reproducible in Git, direct Pydantic validation | settled | Ayush Khelwal |
+| 14 | 2026-11-01 | Snapshot date set to 2026-10-25 in `configs/splits.yaml` | All downloads captured by this date; test window 2025-07-01 – 2026-10-25 | settled | Ayush Khelwal |
+| 15 | 2026-11-01 | Silver label provenance: every silver span/link/label records its alignment method and source for downstream quality analysis | Enables silver-vs-gold precision measurement and label noise estimation | settled | Ayush Khelwal |
 
 ## To decide in week 1
 
-- Snapshot date for all downloads.
+- ~~Snapshot date for all downloads.~~ → **Decision #14** (2026-10-25)
 - Exact training cutoff of each LLM baseline (needed for the `post_llm_cutoff` subset).
 - Which ~40 open-source repos to use for SBOMs.
-- Annotation tool (Label Studio / doccano / spreadsheet).
+- ~~Annotation tool (Label Studio / doccano / spreadsheet).~~ → **Decision #13** (JSONL + doccano export)
 - GPU access: where training runs (lab machine / Colab / Kaggle) and per-person budget.
 - Postgres vs SQLite for the demo deployment.
+

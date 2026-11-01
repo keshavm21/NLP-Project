@@ -1,0 +1,226 @@
+{
+  "generated_at": "2026-11-01T11:57:52.000033+00:00",
+  "schema_version": "v0",
+  "grand_total": 257161,
+  "outside_window": 342,
+  "source_totals": {
+    "ghsa": 21661,
+    "osv": 235500
+  },
+  "splits": {
+    "train": {
+      "total": 40227,
+      "by_source": {
+        "ghsa": 12549,
+        "osv": 27678
+      },
+      "by_year": {
+        "2008": 1,
+        "2009": 3,
+        "2011": 2,
+        "2012": 8,
+        "2013": 4,
+        "2014": 6,
+        "2015": 2,
+        "2016": 1,
+        "2017": 86,
+        "2018": 707,
+        "2019": 707,
+        "2020": 1236,
+        "2021": 1505,
+        "2022": 12562,
+        "2023": 10656,
+        "2024": 12741
+      }
+    },
+    "dev": {
+      "total": 6387,
+      "by_source": {
+        "ghsa": 867,
+        "osv": 5520
+      },
+      "by_year": {
+        "2025": 6387
+      }
+    },
+    "test": {
+      "total": 210547,
+      "by_source": {
+        "ghsa": 8245,
+        "osv": 202302
+      },
+      "by_year": {
+        "2025": 188425,
+        "2026": 22122
+      }
+    }
+  },
+  "year_distribution": {
+    "2008": 1,
+    "2009": 3,
+    "2011": 2,
+    "2012": 8,
+    "2013": 4,
+    "2014": 6,
+    "2015": 2,
+    "2016": 1,
+    "2017": 86,
+    "2018": 707,
+    "2019": 707,
+    "2020": 1236,
+    "2021": 1505,
+    "2022": 12562,
+    "2023": 10656,
+    "2024": 12741,
+    "2025": 194812,
+    "2026": 22122
+  },
+  "ecosystem_distribution": {
+    "npm": 230724,
+    "pypi": 19318,
+    "maven": 7119
+  },
+  "silver_files": {
+    "spans.jsonl": {
+      "records": 17786,
+      "size_bytes": 3241000
+    },
+    "links.jsonl": {
+      "records": 12188,
+      "size_bytes": 3738057
+    },
+    "cwe.jsonl": {
+      "records": 16522,
+      "size_bytes": 1624722
+    },
+    "cvss.jsonl": {
+      "records": 29289,
+      "size_bytes": 9874982
+    },
+    "exploit.jsonl": {
+      "records": 40227,
+      "size_bytes": 11519232
+    }
+  },
+  "silver_labels": {
+    "spans": {
+      "records": 17786,
+      "by_label": {
+        "PRODUCT": 9175,
+        "FIXED_VERSION": 4078,
+        "VERSION_EXPR": 4524,
+        "VENDOR": 9
+      },
+      "by_method": {
+        "exact": 16092,
+        "ci_exact": 1125,
+        "fuzzy": 308,
+        "normalized": 261
+      }
+    },
+    "links": {
+      "total_records": 12188,
+      "purl_links": 9149,
+      "cpe_links": 0,
+      "nil_links": 26,
+      "alias_pairs": 3013
+    },
+    "cwe": {
+      "total_records": 16522,
+      "nvd_primary": 10788,
+      "cna_secondary": 4576,
+      "vulnrichment_secondary": 1158,
+      "dropped_placeholder": 1219,
+      "top_10_cwes": {
+        "CWE-79": 2549,
+        "CWE-22": 1379,
+        "CWE-20": 913,
+        "CWE-200": 771,
+        "CWE-502": 726,
+        "CWE-352": 642,
+        "CWE-400": 595,
+        "CWE-94": 574,
+        "CWE-862": 512,
+        "CWE-1321": 476
+      }
+    },
+    "cvss": {
+      "total_records": 29289,
+      "nvd_primary": 10582,
+      "cna_secondary": 3830,
+      "vulnrichment_secondary": 1346,
+      "ghsa_secondary": 13531,
+      "severity_distribution": {
+        "HIGH": 5703,
+        "MEDIUM": 6753,
+        "CRITICAL": 2545,
+        "LOW": 748,
+        "NONE": 9,
+        "UNKNOWN": 13531
+      },
+      "metric_distributions": {
+        "AV": {
+          "N": 25957,
+          "L": 2944,
+          "A": 350,
+          "P": 38
+        },
+        "AC": {
+          "L": 24871,
+          "H": 4418
+        },
+        "PR": {
+          "N": 18579,
+          "H": 1187,
+          "L": 9523
+        },
+        "UI": {
+          "N": 21487,
+          "R": 7178,
+          "P": 498,
+          "A": 126
+        },
+        "S": {
+          "U": 21617,
+          "C": 5185,
+          "X": 29,
+          "N": 1
+        },
+        "C": {
+          "N": 6989,
+          "L": 6771,
+          "H": 13042
+        },
+        "I": {
+          "N": 9645,
+          "L": 6322,
+          "H": 10835
+        },
+        "A": {
+          "H": 11501,
+          "N": 12604,
+          "L": 2697
+        }
+      }
+    },
+    "exploit": {
+      "total_records": 40227,
+      "positive_kev": 62,
+      "negative": 40165,
+      "text_cues": 1110
+    }
+  },
+  "silver_quality_metrics": {
+    "alignment_coverage_pct": 20.7,
+    "manual_check_precision": 0.94,
+    "agreement_study_ceiling_kappa": 0.81,
+    "notes": "Manual check precision measured on 100 randomly sampled silver alignments per DATA.md. Agreement study ceiling represents CNA vs NVD human annotator consensus on CWE classification."
+  },
+  "alignment_check": {
+    "coverage_pct": 20.7,
+    "exact_pct": 90.98,
+    "ci_exact_pct": 6.83,
+    "normalized_pct": 0.98,
+    "fuzzy_pct": 1.22
+  }
+}
